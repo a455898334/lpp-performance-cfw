@@ -672,6 +672,20 @@ void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
         
         custom_highlight(t, ch, p, v, 1);
     }
+    if (t >= 0xB0 && t < 0xC0) {
+        for (u8 s = 0; s < 8; s++) {
+            for (u8 i = 0; i < 8; i++) {
+                grab_fader_slot(s,i)
+                if ((fader->blob->ch == ch) &&
+                    (fader->blob->p == p)) {
+                        anim->value = v;
+                }
+            }
+        }
+        for (u8 i = 0; i < 8; i++){
+            custom_fader_draw(i);
+        }
+    }
 }
 
 void custom_aftertouch_event(u8 v) {
