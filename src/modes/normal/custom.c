@@ -687,7 +687,7 @@ void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
 
     if (custom_fader_ignore_external_timeout == 0)
     {
-        if (t >= 0xB && t < 0xC) {
+        if (t == 0xB) { // CC message
             for (u8 i = 0; i < 8; i++) {
                 for (u8 j = 0; j < 8; j++) {
                     grab_fader_slot(i,j)
