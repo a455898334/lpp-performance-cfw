@@ -676,32 +676,62 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
 }
 
 void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
-    if ((custom_valid >> custom_active_slot) & 1) {
+    if ((custom_valid >> custom_active_slot) & 1 && port == USBSTANDALONE) {
         if (t == 0x8) {
             v = 0; // Note off
             t = 0x9;
         }
-        
+
         custom_highlight(t, ch, p, v, 1);
     }
 
     if (custom_fader_ignore_external_timeout == 0)
     {
         if (t == 0xB) { // CC message
+            u8 buttons_updated = 0;
+            
             for (u8 i = 0; i < 8; i++) {
                 for (u8 j = 0; j < 8; j++) {
                     grab_fader_slot(i,j)
-                    if (!fader->blob) continue;
+                    if (fader->blob)
+                    {
+                        if ((fader->blob->ch == ch) &&
+                            (fader->blob->p == p)
+                        ) {
+                            anim->value = v;
+                            anim->final = v;
+                            anim->counter = 0;
+                            if (i == custom_active_slot)
+                            {
+                                custom_fader_draw(j);
+                            }
+                        }
+                    }
 
-                    if ((fader->blob->ch == ch) &&
-                        (fader->blob->p == p)
-                    ) {
-                        anim->value = v;
-                        anim->final = v;
-                        anim->counter = 0;
-                        if (i == custom_active_slot)
-                        {
-                            custom_fader_draw(j);
+                    if (buttons_updated == 0)
+                    {
+                        for (u8 k = 0; k < 8; k++) {
+                            if (map[i][j][k]){
+                                if (map[i][j][k]->kind == 0x02 &&
+                                    map[i][j][k]->ch == ch &&
+                                    map[i][j][k]->p == p &&
+                                    map[i][j][k]->trig == 0x01
+                                ){
+                                    u8 x2 = map_state_ptr[i][j][k] >> 3;
+                                    
+                                    if (map[i][j][k]->v_on == v)
+                                    {
+                                        map_state_i[x2] |= 1ULL << k;
+                                    }
+                                    else 
+                                    {
+                                        map_state_i[x2] &= ~(1ULL << k);
+                                    }
+                                    custom_highlight(t, ch, p, v, 0);
+
+                                    buttons_updated = 1;
+                                }
+                            }
                         }
                     }
                 }
