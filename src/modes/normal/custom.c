@@ -121,6 +121,8 @@ custom_fader_anim custom_fader_anims[8][8];
 
 u8 custom_fader_orientation = 0;
 
+u8 custom_fader_ignore_external_timeout = 0;
+
 #define grab_fader_slot(s, i) \
     custom_fader* fader = &custom_faders[s][i]; \
     custom_fader_anim* anim = &custom_fader_anims[fader->anim_s][fader->anim_p];
@@ -257,6 +259,11 @@ void custom_fader_trigger(u8 x, u8 y, u8 v) {
     }
 
     u16 time = custom_fader_time(v) * (diff - 1) / 126; // Time it takes to do the line
+
+    if (time > custom_fader_ignore_external_timeout)
+    {
+        custom_fader_ignore_external_timeout = time;
+    }
 
     if (time >= diff) { // Enough time to do line smoothly
         anim->tick = time / diff;
@@ -419,6 +426,11 @@ void custom_init() {
 
 void custom_timer_event() {
     if (!custom_loaded) return;
+
+    if (custom_fader_ignore_external_timeout > 0)
+    {
+        custom_fader_ignore_external_timeout--;
+    }
 
     if (custom_export_slot < 8 && custom_export++ % 7 == 0) {
         u8 p = custom_export / 7;
@@ -664,7 +676,7 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
 }
 
 void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
-    if ((custom_valid >> custom_active_slot) & 1 && port == USBSTANDALONE) {
+    if ((custom_valid >> custom_active_slot) & 1) {
         if (t == 0x8) {
             v = 0; // Note off
             t = 0x9;
@@ -672,18 +684,28 @@ void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
         
         custom_highlight(t, ch, p, v, 1);
     }
-    if (t >= 0xB0 && t < 0xC0) {
-        for (u8 s = 0; s < 8; s++) {
+
+    if (custom_fader_ignore_external_timeout == 0)
+    {
+        if (t >= 0xB && t < 0xC) {
             for (u8 i = 0; i < 8; i++) {
-                grab_fader_slot(s,i)
-                if ((fader->blob->ch == ch) &&
-                    (fader->blob->p == p)) {
+                for (u8 j = 0; j < 8; j++) {
+                    grab_fader_slot(i,j)
+                    if (!fader->blob) continue;
+
+                    if ((fader->blob->ch == ch) &&
+                        (fader->blob->p == p)
+                    ) {
                         anim->value = v;
+                        anim->final = v;
+                        anim->counter = 0;
+                        if (i == custom_active_slot)
+                        {
+                            custom_fader_draw(j);
+                        }
+                    }
                 }
             }
-        }
-        for (u8 i = 0; i < 8; i++){
-            custom_fader_draw(i);
         }
     }
 }
