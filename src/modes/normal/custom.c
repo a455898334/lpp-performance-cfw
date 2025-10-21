@@ -121,7 +121,8 @@ custom_fader_anim custom_fader_anims[8][8];
 
 u8 custom_fader_orientation = 0;
 
-u8 custom_fader_ignore_external_timeout = 0;
+#define custom_fader_ignore_external_timeout 1000; // 1 second
+u16 custom_fader_ignore_external_timeout_countdown = 0;
 
 #define grab_fader_slot(s, i) \
     custom_fader* fader = &custom_faders[s][i]; \
@@ -427,9 +428,9 @@ void custom_init() {
 void custom_timer_event() {
     if (!custom_loaded) return;
 
-    if (custom_fader_ignore_external_timeout > 0)
+    if (custom_fader_ignore_external_timeout_countdown > 0)
     {
-        custom_fader_ignore_external_timeout--;
+        custom_fader_ignore_external_timeout_countdown--;
     }
 
     if (custom_export_slot < 8 && custom_export++ % 7 == 0) {
@@ -685,7 +686,7 @@ void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
         custom_highlight(t, ch, p, v, 1);
     }
 
-    if (custom_fader_ignore_external_timeout == 0)
+    if (custom_fader_ignore_external_timeout_countdown == 0)
     {
         if (t == 0xB) { // CC message
             u8 buttons_updated = 0;
