@@ -130,9 +130,6 @@ u16 custom_fader_ignore_external_timeout_countdown = 0;
 
 #define grab_fader(i) grab_fader_slot(custom_active_slot, i)
 
-#define xair_midi_dump_sysex_length 24
-const u8 xair_midi_dump_sysex[xair_midi_dump_sysex_length] = {0xF0,0x00,0x20,0x32,0x32,0x2F,0x2D,0x61,0x63,0x74,0x69,0x6F,0x6E,0x2F,0x6D,0x69,0x64,0x69,0x64,0x75,0x6D,0x70,0x20,0xF7};
-
 void custom_fader_led(u8 x, u8 y, u8 v, u8 f) {
     u8 orientation = (custom_fader_orientation >> custom_active_slot) & 1;
 
@@ -588,7 +585,7 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
 
         if (x == 1 && y == 0) {
             if (v) {
-                send_sysex(USBSTANDALONE, xair_midi_dump_sysex, xair_midi_dump_sysex_length);
+                send_midi(USBSTANDALONE, 0xB0, 127, 127);
             }
             rgb_led(p, 0, (v == 0)? 0 : 63, 0);
         }
