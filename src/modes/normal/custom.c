@@ -685,13 +685,6 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
 }
 
 void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
-    if (t == 0x8) {
-        v = 0; // Note off
-        t = 0x9;
-    }
-
-    custom_highlight(t, ch, p, v, 1);
-
     if (custom_fader_ignore_external_timeout_countdown == 0)
     {
         if (t == 0xB) { // CC message
