@@ -423,6 +423,8 @@ void custom_init() {
             else rgb_led(89 - i * 10, invalid_slot_r, invalid_slot_g, invalid_slot_b);
 
         } else rgb_led(89 - i * 10, inactive_slot_r, inactive_slot_g, inactive_slot_b);
+
+    send_midi(USBSTANDALONE, 0xB0, 127, 127);
 }
 
 void custom_timer_event() {
@@ -585,7 +587,7 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
 
         if (x == 1 && y == 0) {
             if (v) {
-                send_midi(USBSTANDALONE, 0xB0, 127, 127);
+                send_midi(USBSTANDALONE, 0xB0, 127, 127); // midi dump
             }
             rgb_led(p, 0, (v == 0)? 0 : 63, 0);
         }
