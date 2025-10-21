@@ -586,8 +586,10 @@ void custom_surface_event(u8 p, u8 v, u8 x, u8 y) {
     } else {
         
 
-        if (x == 1 && y == 0 && v) {
-            send_sysex(USBSTANDALONE, xair_midi_dump_sysex, xair_midi_dump_sysex_length);
+        if (x == 1 && y == 0) {
+            if (v) {
+                send_sysex(USBSTANDALONE, xair_midi_dump_sysex, xair_midi_dump_sysex_length);
+            }
             rgb_led(p, 0, (v == 0)? 0 : 63, 0);
         }
         else if (x == 0 || x == 9 || y == 0) { // Unused side buttons
