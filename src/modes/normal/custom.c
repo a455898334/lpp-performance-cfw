@@ -693,46 +693,41 @@ void custom_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
             u8 buttons_updated = 0;
             
             for (u8 i = 0; i < 8; i++) {
-                for (u8 j = 0; j < 8; j++) {
-                    grab_fader_slot(i,j)
-                    if (fader->blob)
-                    {
-                        if ((fader->blob->ch == ch) &&
-                            (fader->blob->p == p)
-                        ) {
-                            anim->value = v;
-                            anim->final = v;
-                            anim->counter = 0;
-                            if (i == custom_active_slot)
-                            {
-                                custom_fader_draw(j);
-                            }
-                        }
+                grab_fader(i)
+                if (fader->blob)
+                {
+                    if ((fader->blob->ch == ch) &&
+                        (fader->blob->p == p)
+                    ) {
+                        anim->value = v;
+                        anim->final = v;
+                        anim->counter = 0;
+                        custom_fader_draw(i);
                     }
+                }
 
-                    if (buttons_updated == 0)
-                    {
-                        for (u8 k = 0; k < 8; k++) {
-                            if (map[i][j][k]){
-                                if (map[i][j][k]->kind == 0x02 &&
-                                    map[i][j][k]->ch == ch &&
-                                    map[i][j][k]->p == p &&
-                                    map[i][j][k]->trig == 0x01
-                                ){
-                                    u8 x2 = map_state_ptr[i][j][k] >> 3;
-                                    
-                                    if (map[i][j][k]->v_on == v)
-                                    {
-                                        map_state_i[x2] |= 1ULL << k;
-                                    }
-                                    else 
-                                    {
-                                        map_state_i[x2] &= ~(1ULL << k);
-                                    }
-                                    custom_highlight(t, ch, p, v, 0);
-
-                                    buttons_updated = 1;
+                if (buttons_updated == 0)
+                {
+                    for (u8 j = 0; j < 8; j++) {
+                        if (map[custom_active_slot][i][j]){
+                            if (map[custom_active_slot][i][j]->kind == 0x02 &&
+                                map[custom_active_slot][i][j]->ch == ch &&
+                                map[custom_active_slot][i][j]->p == p &&
+                                map[custom_active_slot][i][j]->trig == 0x01
+                            ){
+                                u8 x2 = map_state_ptr[custom_active_slot][i][j] >> 3;
+                                
+                                if (map[custom_active_slot][i][j]->v_on == v)
+                                {
+                                    map_state_i[x2] |= 1ULL << j;
                                 }
+                                else 
+                                {
+                                    map_state_i[x2] &= ~(1ULL << j);
+                                }
+                                custom_highlight(t, ch, p, v, 0);
+
+                                buttons_updated = 1;
                             }
                         }
                     }
